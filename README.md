@@ -1,5 +1,7 @@
 # PDBBind dataset generation 
 
+Files `environment_cpu.yml` and `pdbbind_data.ipynb` are partly from `https://gitlab.com/cheminfIBB/pafnucy`.
+
 ## 
 
 ## How to generate dataset
