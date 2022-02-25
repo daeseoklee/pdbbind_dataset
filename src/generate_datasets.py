@@ -1,5 +1,4 @@
 from pathlib import Path
-from this import d 
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import RDLogger
