@@ -14,7 +14,6 @@ import numpy as np
 This module is supposed to be run after running
     -initial parts of pdbbind_data.ipynb 
     -split_data.py 
-    -run_obabel.py 
     -clean_pdbs.ipynb
 """
 
@@ -25,25 +24,34 @@ class SDFParsingException(Exception):
     def __str__(self):
         return f'Error while parsing {self.sdf_file}'
 
+class SMILESGenerationError(Exception):
+    def __init__(self, sdf_file):
+        super().__init__()
+        self.sdf_file = sdf_file
+    def __str__(self):
+        return f'Error while obtaining rdkit-canonical SMILES molecule in {self.sdf_file}'
+
 def get_canonical_permutation(sdf_file):
     count = 0
-    for mol in Chem.SDMolSupplier(sdf_file, sanitize=True):
+    for mol in Chem.SDMolSupplier(sdf_file, sanitize=False):
         count += 1
     assert count == 1
     if mol is None:
         raise SDFParsingException(sdf_file)
-    mol = Chem.rdmolops.RemoveAllHs(mol) 
-    target_smiles = Chem.MolToSmiles(mol) 
-    target_mol = Chem.MolFromSmiles(target_smiles, sanitize=False) #will reorder as this 
+    mol.UpdatePropertyCache(strict=False)
+    mol = Chem.rdmolops.RemoveAllHs(mol, sanitize=False) 
     try:
-        Chem.rdmolops.SanitizeMol(target_mol)
+        target_smiles = Chem.MolToSmiles(mol)
     except:
-        return target_smiles, None
+        raise SMILESGenerationError(sdf_file) 
+    target_mol = Chem.MolFromSmiles(target_smiles, sanitize=False) #will reorder as this 
+    #try:
+    #    Chem.rdmolops.SanitizeMol(target_mol)
+    #except:
+    #    return target_smiles, None
     if target_mol is None:
-        print('here!!')
-        print(sdf_file)
-        print(target_smiles, target_mol)
         raise Exception()
+    target_mol.UpdatePropertyCache(strict=False)
     
     orig_ranks = list(Chem.CanonicalRankAtoms(mol))
     orig_ranks_reversed = tuple(zip(*sorted([(j, i) for i, j in enumerate(orig_ranks)])))[1]
@@ -93,7 +101,7 @@ def get_atom_coord_list(sdf_file, perm):
     return atom_coord_list
 
 def check_aligned(atom_coord_list, target_smiles):
-    target_mol = Chem.MolFromSmiles(target_smiles)
+    target_mol = Chem.MolFromSmiles(target_smiles, sanitize=False)
     for (atomname, coord), atom in zip(atom_coord_list, target_mol.GetAtoms()):
         assert atomname == atom.GetSymbol()
 
@@ -115,11 +123,12 @@ class SanitizationError(Exception):
         super().__init__()
 
 def get_smiles_and_atom_coord_list(data_dir):
-    sdf_file = str(data_dir / f'{data_dir.name}_ligand_obabel.sdf')
+    sdf_file = str(data_dir / f'{data_dir.name}_ligand.sdf') 
     target_smiles, perm = get_canonical_permutation(sdf_file)
     
     if perm is None:
         raise SanitizationError()
+    
     atom_coord_list = get_atom_coord_list(sdf_file, perm)
     check_aligned(atom_coord_list, target_smiles)
     
@@ -129,6 +138,7 @@ def get_smiles_list(data_dir_list):
     print('Obtaining smiles..')
     smiles_list = []
     sdf_parsing_exceptions = 0
+    smiles_exceptions = 0
     sanitization_errors  = 0
     for data_dir in tqdm(data_dir_list):
         try:
@@ -137,6 +147,11 @@ def get_smiles_list(data_dir_list):
             sdf_parsing_exceptions += 1
             smiles_list.append(None)
             #raise Exception(sdf_file)
+            raise Exception(data_dir)
+            continue
+        except SMILESGenerationError:
+            smiles_exceptions += 1
+            smiles_list.append(None)
             continue
         except SanitizationError:
             sanitization_errors += 1
@@ -146,7 +161,9 @@ def get_smiles_list(data_dir_list):
             raise Exception()
         smiles_list.append(target_smiles)
     print(f'sdf parsing exceptions: {sdf_parsing_exceptions}')
+    print(f'SMILES generation errors: {smiles_exceptions}')
     print(f'sanitization errors: {sanitization_errors}')
+    
     return smiles_list
     
 def _gather_dataset_info(split):
@@ -369,6 +386,7 @@ def _generate_pbsdb_int_dataset(split, collect_clean_pdbs=True):
         cc_fasta_dict = json.load(f)
 
     sdf_parsing_exceptions = 0
+    smiles_errors = 0
     sanitization_errors  = 0
     pair_duplicates = 0 
     data_dict = {}
@@ -381,6 +399,8 @@ def _generate_pbsdb_int_dataset(split, collect_clean_pdbs=True):
         except SDFParsingException:
             sdf_parsing_exceptions += 1
             continue 
+        except SMILESGenerationError:
+            smiles_errors += 1
         except SanitizationError:
             sanitization_errors += 1
             continue
@@ -416,6 +436,7 @@ def _generate_pbsdb_int_dataset(split, collect_clean_pdbs=True):
         pickle.dump(data_dict, f)
     
     print('sdf parsing exceptions:', sdf_parsing_exceptions)
+    print('SMILES generation errors:', smiles_errors)
     print('sanitization errors:', sanitization_errors)
     print('pair duplicates', pair_duplicates)
         
@@ -431,7 +452,7 @@ if __name__ == '__main__':
     cwd = Path(__file__).parent
     dataset_dir = cwd.parent / 'dataset'
     
-    pdbbind_base_dir = cwd.parent / '/home/daelee/pafnucy/pdbbind/v2016'
+    pdbbind_base_dir = cwd.parent / 'pdbbind' / 'v2016'
     pdbbind_set_to_dir = {
         'general': pdbbind_base_dir / 'general-set-except-refined',
         'refined': pdbbind_base_dir / 'refined-set',
@@ -447,15 +468,13 @@ if __name__ == '__main__':
     
     generate_pdbbind_ccsan_dti_datasets()
     
-    #for split in ['train', 'dev', 'test']:
-    #    save_pdbbind_ccsan_compact_dist_matrix_lists(split)
     
     #int dataset --------------------------------------------------------------------------
     pbsdb_dir = cwd.parent / 'pbsdb'
     if not pbsdb_dir.exists():
         pbsdb_dir.mkdir()
     
-    #generate_pbsdb_int_datasets()    
+    generate_pbsdb_int_datasets()    
     
     
     

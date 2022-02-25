@@ -802,7 +802,7 @@ pdbid,-logKd/Ki,set
 4gj8,3.3,general
 4gj9,3.3,general
 4jss,3.3,refined
-4mrw,3.3,refined
+4mrw,3.3,core
 4msa,3.3,refined
 4np3,3.3,refined
 4ojq,3.3,general
@@ -1005,7 +1005,7 @@ pdbid,-logKd/Ki,set
 4eky,3.52,core
 4g93,3.52,general
 4hv7,3.52,general
-4mrz,3.52,refined
+4mrz,3.52,core
 4oyo,3.52,general
 2b4m,3.53,general
 2y67,3.53,general
@@ -1609,7 +1609,7 @@ pdbid,-logKd/Ki,set
 3ueo,4.03,general
 4bi2,4.03,general
 4kab,4.03,general
-4msn,4.03,refined
+4msn,4.03,core
 4pri,4.03,general
 4wmv,4.03,general
 1hi5,4.04,refined
@@ -3408,7 +3408,7 @@ pdbid,-logKd/Ki,set
 4h7q,5.06,refined
 4j7i,5.06,general
 5a2i,5.06,refined
-5c1w,5.06,refined
+5c1w,5.06,core
 2c3l,5.07,refined
 2i7c,5.07,general
 2xm1,5.07,refined
@@ -5393,7 +5393,7 @@ pdbid,-logKd/Ki,set
 4hkn,5.96,general
 4hlh,5.96,general
 4hlk,5.96,general
-4msc,5.96,refined
+4msc,5.96,core
 4n1b,5.96,general
 4p0w,5.96,general
 4qxs,5.96,general
@@ -10544,7 +10544,7 @@ pdbid,-logKd/Ki,set
 4bxk,7.95,refined
 4knj,7.95,refined
 1epo,7.96,refined
-1g2k,7.96,core
+1g2k,7.96,refined
 1hvh,7.96,refined
 1idb,7.96,general
 1nzq,7.96,general
@@ -10666,7 +10666,7 @@ pdbid,-logKd/Ki,set
 3co9,8.0,general
 3cvk,8.0,general
 3cwj,8.0,general
-3cyx,8.0,refined
+3cyx,8.0,core
 3d5m,8.0,general
 3dba,8.0,general
 3dej,8.0,general
