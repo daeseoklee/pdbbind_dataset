@@ -255,7 +255,7 @@ def parse_clean_pdb(clean_pdb, return_coords=True):
     return ca_exist, coords, coords_mask
     
 
-def generate_pdbbind_ccsan_dti_datasets():
+def generate_pdbbind_cc_dti_datasets():
     split_to_fasta_set = {}
     split_to_smiles_set = {}
     split_to_triple_list = {}
@@ -267,13 +267,13 @@ def generate_pdbbind_ccsan_dti_datasets():
     fasta_list = list(split_to_fasta_set['train'] | split_to_fasta_set['dev'] | split_to_fasta_set['test'])
     smiles_list = list(split_to_smiles_set['train'] | split_to_smiles_set['dev'] | split_to_smiles_set['test'])
     
-    with open(pdbbind_ccsan_derived_dir / 'ligand_index.json', 'w') as f:
+    with open(pdbbind_cc_derived_dir / 'ligand_index.json', 'w') as f:
         ligand_index_dict = {
             str(i): smiles for i, smiles in enumerate(smiles_list)
         }
         json.dump(ligand_index_dict, f)
     
-    with open(pdbbind_ccsan_derived_dir / 'protein_index.json', 'w') as f:
+    with open(pdbbind_cc_derived_dir / 'protein_index.json', 'w') as f:
         protein_index_dict = {
             str(i): fasta for i, fasta in enumerate(fasta_list)
         }
@@ -283,17 +283,17 @@ def generate_pdbbind_ccsan_dti_datasets():
         print(f'<processing {split}>')
         _triple_list = split_to_triple_list[split]
         triple_list = [(str(fasta_list.index(fasta)), str(smiles_list.index(smiles)), affinity) for fasta, smiles, affinity in _triple_list]
-        with open(pdbbind_ccsan_derived_dir / f'pdbbind_ccsan_pafnucy_{split}.tsv', 'w') as f:
+        with open(pdbbind_cc_derived_dir / f'pdbbind_cc_pafnucy_{split}.tsv', 'w') as f:
             for p_idx, m_idx, affinity in triple_list:
                 f.write(f'{p_idx}\t{m_idx}\t{affinity}\n')
         
         data_dir_list = split_to_data_dir_list[split]
         
-        with open(pdbbind_ccsan_derived_dir / f'pafnucy_{split}_pdbcode_list.pkl', 'wb') as f:
+        with open(pdbbind_cc_derived_dir / f'pafnucy_{split}_pdbcode_list.pkl', 'wb') as f:
             code_list = [data_dir.name for data_dir in data_dir_list]
             pickle.dump(code_list, f)
         
-        clean_pdb_target_dir = pdbbind_ccsan_derived_dir / 'clean_pdbs' 
+        clean_pdb_target_dir = pdbbind_cc_derived_dir / 'clean_pdbs' 
         if not clean_pdb_target_dir.exists():
             clean_pdb_target_dir.mkdir()
         pdbcode_to_resmask_acc = {}
@@ -342,16 +342,16 @@ def generate_pdbbind_ccsan_dti_datasets():
             compact_dist_matrix_list.append(compact_dist_matrix)
             dist_matrix_list.append(dist_matrix_list)
             
-        with open(pdbbind_ccsan_derived_dir / f'pafnucy_{split}_resmask_acc_list.pkl', 'wb') as f:
+        with open(pdbbind_cc_derived_dir / f'pafnucy_{split}_resmask_acc_list.pkl', 'wb') as f:
             pickle.dump(resmask_acc_list, f)
 
-        with open(pdbbind_ccsan_derived_dir / f'pafnucy_{split}_resmask_list.pkl', 'wb') as f:
+        with open(pdbbind_cc_derived_dir / f'pafnucy_{split}_resmask_list.pkl', 'wb') as f:
             pickle.dump(resmask_list, f)
         
-        with open(pdbbind_ccsan_derived_dir / f'pafnucy_{split}_compact_dist_matrix_list.pkl', 'wb') as f:
+        with open(pdbbind_cc_derived_dir / f'pafnucy_{split}_compact_dist_matrix_list.pkl', 'wb') as f:
             pickle.dump(compact_dist_matrix_list, f)
             
-        with open(pdbbind_ccsan_derived_dir / f'pafnucy_{split}_dist_matrix_list.pkl', 'wb') as f:
+        with open(pdbbind_cc_derived_dir / f'pafnucy_{split}_dist_matrix_list.pkl', 'wb') as f:
             pickle.dump(dist_matrix_list, f)
             
 
@@ -462,11 +462,11 @@ if __name__ == '__main__':
     
     
     #dti dataset--------------------------------------------------------------------------
-    pdbbind_ccsan_derived_dir = cwd.parent / 'pdbbind_ccsan_derived'
-    if not pdbbind_ccsan_derived_dir.exists():
-        pdbbind_ccsan_derived_dir.mkdir()
+    pdbbind_cc_derived_dir = cwd.parent / 'pdbbind_cc_derived'
+    if not pdbbind_cc_derived_dir.exists():
+        pdbbind_cc_derived_dir.mkdir()
     
-    generate_pdbbind_ccsan_dti_datasets()
+    generate_pdbbind_cc_dti_datasets()
     
     
     #int dataset --------------------------------------------------------------------------
