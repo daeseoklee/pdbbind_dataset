@@ -450,7 +450,7 @@ def generate_pbsdb_int_datasets(collect_clean_pdbs=True):
 
 if __name__ == '__main__':
     cwd = Path(__file__).parent
-    dataset_dir = cwd.parent / 'dataset'
+    dataset_dir = cwd.parent / 'data'
     
     pdbbind_base_dir = cwd.parent / 'pdbbind' / 'v2016'
     pdbbind_set_to_dir = {
